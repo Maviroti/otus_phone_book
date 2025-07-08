@@ -5,7 +5,7 @@ import os
 import sys
 
 from helpers import clear_console, get_data, get_json_format, get_max_id, print_about_prog, print_dict, menu_pause, dump_data, sorted_id, yes_no
-from config import PATH
+from config_old import PATH
 
 # === [Просмотр] ===
 def view_contact():

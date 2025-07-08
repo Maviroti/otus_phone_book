@@ -1,7 +1,7 @@
 import json
 import os
 
-from config import PATH, version, copyright
+from config_old import PATH, version, copyright
 
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
