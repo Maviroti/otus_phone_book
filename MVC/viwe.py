@@ -36,7 +36,7 @@ def print_menu(points: list, clr_cosole = True)-> None:
         print(f'{enum + 1}. {point}')
     print('0. Выход')
 
-def get_iput(msg :str = "Введите номер пункта: ") -> str:
+def get_input(msg :str = "Введите номер пункта: ") -> str:
     return input(msg)
 
 def error_print(err_msg: str = "Некорректный ввод!"):

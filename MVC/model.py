@@ -5,17 +5,18 @@ from config import path_to_phone_book
 
 @dataclass
 class Contact():
-    def __init__(self, id, name, phone, comment):
-        self.id = id
-        self.name = name
-        self.phone = phone
-        self.comment = comment
+    id: str
+    name: str
+    phone: str
+    comment: str
 
-    def __str__(self):
-        print(self.id)
-        print(self.name)
-        print(self.phone)
-        print(self.comment)
+    def __str__(self) -> str:
+        result = f'Контакт: {self.id}\n' + f'\tИмя: {self.name}\n' + f'\tТелефон: {self.phone}\n' + f'\tКомментарий: {self.comment}\n'
+        return result
+    
+    def __repr__(self) -> str:
+        return f'Contact(id = {self.id}, name = {self.name}, phone = {self.phone}, comment = {self.comment})'
+
 
 
 
@@ -54,6 +55,16 @@ class Phone_book():
 
     def add_contact(self, contact: Contact) -> None:
         self.contacts.append(contact)
+
+    def view_contact(self) -> None:
+        for contact in self.contacts:
+            print(contact)
+
+    def get_new_id(self) -> str:
+        if self.contacts:
+            cont_with_max_id = max(self.contacts, key=lambda contact: int(contact.id))
+            return str(int(cont_with_max_id.id) + 1)
+        return "1"
 
     def __str__(self) -> str:
         return str(self.contacts)
