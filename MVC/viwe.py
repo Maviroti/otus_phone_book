@@ -21,8 +21,7 @@ def yes_no(text:str) -> bool:
     Returns:
         yes(bool): true - cошласие, false - отказ/невернный ввод
     """
-    print(text)
-    continue_tag = input('Продолжить? (y/n): ')
+    continue_tag = input(f'{text} (y/n): ')
     if continue_tag == 'n' or continue_tag == 'N':
         return False
     elif continue_tag != 'y' and continue_tag != 'Y':
