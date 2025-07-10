@@ -16,6 +16,9 @@ class Contact():
     
     def __repr__(self) -> str:
         return f'Contact(id = {self.id}, name = {self.name}, phone = {self.phone}, comment = {self.comment})'
+    
+    def to_dict(self) -> dict:
+        return {self.id: {'name' : self.name, 'phone': self.phone, 'comment': self.comment}}
 
 
 
@@ -43,20 +46,21 @@ class File_phone_book():
 
 
 class Phone_book():
+
+    _clear_change_log = {'new': [], 'change': [], 'del': []}
+
     def __init__(self, data: dict) -> None:
         self.contacts = []
+        self.change_log = self._clear_change_log
 
         for id in data.keys():
             self.contacts.append(Contact(id, data[id]['name'], data[id]['phone'], data[id]['comment'] ))
-        # self.data = data
-
-    # def clear_book(self) -> None:
-    #     self.file.write_file({})
 
     def add_contact(self, contact: Contact) -> None:
         self.contacts.append(contact)
+        self.change_log['new'].append(contact)
 
-    def view_contact(self) -> None:
+    def view_contacts(self) -> None:
         for contact in self.contacts:
             print(contact)
 
@@ -65,6 +69,92 @@ class Phone_book():
             cont_with_max_id = max(self.contacts, key=lambda contact: int(contact.id))
             return str(int(cont_with_max_id.id) + 1)
         return "1"
+    
+    def check_change_exist(self) -> bool:
+        for key in self.change_log.keys():
+            if self.change_log[key]:
+                return True
+        return False
+    
+    def view_change(self):
+        print('Список изменений.')
+        if self.change_log['new']:
+            print('Добавлены контакты:')
+            for cont in self.change_log['new']: print(cont)
+        if self.change_log['change']:
+            print()
+            print('Изменены контакты:')
+            for cont in self.change_log['change']: print(cont)
+        if self.change_log['del']:
+            print()
+            print('Удалены контакты:')
+            for cont in self.change_log['del']: print(cont)
 
+
+    
+    def save_change(self, file : 'File_phone_book') -> None:
+        dict_contacts = {}
+        for cont in self.contacts:
+            dict_contacts = {**dict_contacts, **cont.to_dict()}
+        file.write_file(dict_contacts)
+        self.change_log = self._clear_change_log
+
+
+    def check_contact_exist_by_id(self, id: str) -> bool:
+        for cont in self.contacts:
+            if cont.id == id:
+                return True
+        return False
+
+    def _get_contact_by_id(self, id:str) -> 'Contact|None':
+        for cont in self.contacts:
+            if cont.id == id:
+                return cont
+            
+    
+
+    def del_contact_by_id(self, id : str) -> 'bool|None':
+        cont = self._get_contact_by_id(id)
+        if cont is not None:
+            self.contacts.remove(cont)
+            if cont in self.change_log['new']:
+                self.change_log['new'].remove(cont)
+            else:
+                self.change_log['del'].append(cont)
+        else:
+            return False
+
+    
+
+    def edit_contacts(self, id: str, name: 'str|None' =None, phone:'str|None' = None, comment:'str|None' = None ) -> 'bool|None':
+        cont = self._get_contact_by_id(id)
+        if cont is not None:
+            in_new = False
+            in_change = False
+            if cont in self.change_log['new']: 
+                self.change_log['new'].remove(cont)
+                in_new = True
+            if cont in self.change_log['change']: 
+                self.change_log['change'].remove(cont)
+                in_change = True
+            if name is not None:
+                cont.name = name
+            if phone is not None:
+                cont.phone = phone
+            if comment is not None:
+                cont.comment = comment
+            if in_new:
+                self.change_log['new'].append(cont)
+            if in_change:
+                self.change_log['change'].append(cont)
+            if not in_change and not in_new:
+                self.change_log['change'].append(cont)
+        else:
+            return False
+        
+    def view_contact_by_id(self, id: str) -> None:
+        cont = self._get_contact_by_id(id)
+        print(cont)
+    
     def __str__(self) -> str:
         return str(self.contacts)
