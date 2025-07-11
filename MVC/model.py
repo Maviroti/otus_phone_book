@@ -69,13 +69,13 @@ class Phone_book():
             cont_with_max_id = max(self.contacts, key=lambda contact: int(contact.id))
             return str(int(cont_with_max_id.id) + 1)
         return "1"
-    
+
     def check_change_exist(self) -> bool:
         for key in self.change_log.keys():
             if self.change_log[key]:
                 return True
         return False
-    
+
     def view_change(self):
         print('Список изменений.')
         if self.change_log['new']:
@@ -90,15 +90,12 @@ class Phone_book():
             print('Удалены контакты:')
             for cont in self.change_log['del']: print(cont)
 
-
-    
     def save_change(self, file : 'File_phone_book') -> None:
         dict_contacts = {}
         for cont in self.contacts:
             dict_contacts = {**dict_contacts, **cont.to_dict()}
         file.write_file(dict_contacts)
         self.change_log = self._clear_change_log
-
 
     def check_contact_exist_by_id(self, id: str) -> bool:
         for cont in self.contacts:
@@ -110,21 +107,14 @@ class Phone_book():
         for cont in self.contacts:
             if cont.id == id:
                 return cont
-            
-    
 
-    def del_contact_by_id(self, id : str) -> 'bool|None':
+    def del_contact_by_id(self, id : str) -> None:
         cont = self._get_contact_by_id(id)
-        if cont is not None:
-            self.contacts.remove(cont)
-            if cont in self.change_log['new']:
-                self.change_log['new'].remove(cont)
-            else:
-                self.change_log['del'].append(cont)
+        self.contacts.remove(cont)
+        if cont in self.change_log['new']:
+            self.change_log['new'].remove(cont)
         else:
-            return False
-
-    
+            self.change_log['del'].append(cont)
 
     def edit_contacts(self, id: str, name: 'str|None' =None, phone:'str|None' = None, comment:'str|None' = None ) -> 'bool|None':
         cont = self._get_contact_by_id(id)
@@ -151,10 +141,53 @@ class Phone_book():
                 self.change_log['change'].append(cont)
         else:
             return False
-        
+
     def view_contact_by_id(self, id: str) -> None:
         cont = self._get_contact_by_id(id)
         print(cont)
+
+    def search_and_view_contact(self, search_query: str, name:bool = False, phone:bool = False, comment:bool = False) -> None:
+        found_contacts = []
+        if name:
+            for cont in self.contacts:
+                if search_query in cont.name and cont not in found_contacts:
+                    found_contacts.append(cont)
+        if phone:
+            for cont in self.contacts:
+                if search_query in cont.phone and cont not in found_contacts:
+                    found_contacts.append(cont)
+        if comment:
+            for cont in self.contacts:
+                if search_query in cont.comment and cont not in found_contacts:
+                    found_contacts.append(cont)
+
+        if found_contacts:
+            print('Результат поиска:')
+            for cont in found_contacts:
+                print(cont)
+        else:
+            print('По данному запросу ничего не найдено!')
+
+    def sorted_contact_id(self) -> None:
+        for enum, cont in enumerate(self.contacts, 1):
+            if cont.id != str(enum):
+                in_new = False
+                in_change = False
+                if cont in self.change_log['new']: 
+                    self.change_log['new'].remove(cont)
+                    in_new = True
+                if cont in self.change_log['change']: 
+                    self.change_log['change'].remove(cont)
+                    in_change = True
+                cont.id = str(enum)
+                if in_new:
+                    self.change_log['new'].append(cont)
+                if in_change:
+                    self.change_log['change'].append(cont)
+                if not in_change and not in_new:
+                    self.change_log['change'].append(cont)
+
+
     
     def __str__(self) -> str:
         return str(self.contacts)

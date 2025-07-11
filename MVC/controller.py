@@ -66,6 +66,38 @@ def open_edit_menu(edit_phone_id:str, phone_book : 'Phone_book') -> None:
             menu_pause()
 
 
+def open_search_menu(phone_book : 'Phone_book'):
+    menu_points = [
+        'Поиск по имени', 
+        'Поиск по номеру',
+        'Поиск по комментарияю',
+        'Поиск по всему',
+    ]
+    selection = None
+    while selection != "0":
+        print_menu(menu_points)
+        selection = get_input()
+        if selection == '1':
+            clear_console()
+            query = get_input('Введите имя для поиска: ')
+            phone_book.search_and_view_contact(query, name=True)
+            menu_pause()
+        elif selection == '2':
+            clear_console()
+            query = get_input('Введите телефон для поиска: ')
+            phone_book.search_and_view_contact(query, phone=True)
+            menu_pause()
+        elif selection == '3':
+            clear_console()
+            query = get_input('Введите комментарий для поиска: ')
+            phone_book.search_and_view_contact(query, comment=True)
+            menu_pause()
+        elif selection == '4':
+            clear_console()
+            query = get_input('Введите запрос для поиска: ')
+            phone_book.search_and_view_contact(query, name=True, phone=True, comment=True)
+            menu_pause()
+
 
 def open_main_menu():
     ph_file = File_phone_book()
@@ -78,6 +110,7 @@ def open_main_menu():
         "Удаление контактов",
         "Очистка контактов",
         "Пересчёт ID контактов",
+        "Посмотреть изменения",
         "О программе",
     ]
     selection = None
@@ -92,8 +125,7 @@ def open_main_menu():
             ph_book.view_contacts()
             menu_pause()
         elif selection == '2':
-            # search_menu()
-            print()
+            open_search_menu(ph_book)
         elif selection == '3':
             clear_console()
             print('Для изменения контакта, необходимо будет указать его ID. Если Вы не знаете ID, то можете воспользоваться "Просмотром" или "Поиском" в основном меню.')
@@ -117,11 +149,23 @@ def open_main_menu():
             print('Для удаления контакта, необходимо будет указать его ID. Если Вы не знаете ID, то можете воспользоваться "Просмотром" или "Поиском" в основном меню.')
             yes = yes_no("Продолжить?")
             if yes:
-                dell_phone_id_str = get_input("Введите ID (если несколько, то через пробел): ")
-                result = ph_book.del_contact_by_id(dell_phone_id_str)
-                if not result:
-                    error_print('Контакта с таким ID нет! Возможно вы его удалили.')
+                dell_phone_id_set = set(get_input("Введите ID (если несколько, то через пробел): ").split())
+                stop_flag = False
+                if not dell_phone_id_set:
+                    error_print('Некорректный ввод!')
+                    stop_flag = True
+                else:
+                    for phone_id in dell_phone_id_set:
+                        if not ph_book.check_contact_exist_by_id(phone_id):
+                            error_print(f'Контакта с ID <{phone_id}> нет! Возможно вы его уже удалили.')
+                            stop_flag = True
+                            break
+                
+                if stop_flag: 
                     menu_pause()
+                else:
+                    for phone_id in dell_phone_id_set:
+                        ph_book.del_contact_by_id(phone_id)
         elif selection == '6':
             print('Все контакты будут удалены и файл будет очищен без возможности отменить это действие!')
             yes = yes_no('Продолжить? ')
@@ -130,9 +174,14 @@ def open_main_menu():
                 ph_book = Phone_book(get_data(ph_file))
             print()
         elif selection == '7':
-            # sorted_id()
-            print()
+            print('Будет выполнено переприсвоение ID, возможна смена ID у некоторых контактов.')
+            yes = yes_no('Продолжить?')
+            if yes:
+                ph_book.sorted_contact_id()
         elif selection == '8':
+            ph_book.view_change()
+            menu_pause()
+        elif selection == '9':
             print_about_prog()
             menu_pause()
     else:
