@@ -3,8 +3,6 @@ from config import version, copyright
 import os
 
 
-
-
 def clear_console():
     os.system('cls' if os.name == 'nt' else 'clear')
 
@@ -29,8 +27,8 @@ def yes_no(text:str) -> bool:
         return yes_no(text)
     return True
 
-def print_menu(points: list, clr_cosole = True)-> None:
-    if clr_cosole:
+def print_menu(points: list, clr_console = True)-> None:
+    if clr_console:
         clear_console()
     for enum, point in enumerate(points):
         print(f'{enum + 1}. {point}')
@@ -39,8 +37,11 @@ def print_menu(points: list, clr_cosole = True)-> None:
 def get_input(msg :str = "Введите номер пункта: ") -> str:
     return input(msg)
 
-def error_print(err_msg: str = "Некорректный ввод!"):
+def error_print(err_msg: str = "Некорректный ввод!") -> None:
     print(err_msg)
+
+def custom_print(msg: str) -> None:
+    print(msg)
 
 def print_about_prog():
     clear_console()

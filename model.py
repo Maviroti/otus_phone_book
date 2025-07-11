@@ -20,30 +20,20 @@ class Contact():
     def to_dict(self) -> dict:
         return {self.id: {'name' : self.name, 'phone': self.phone, 'comment': self.comment}}
 
-
-
-
-
 class File_phone_book():
-    def __init__(self, path : str = path_to_phone_book):
+    def __init__(self, path : str = path_to_phone_book) -> None:
         self.path = path
 
     def read_file(self) -> dict:
         with open (self.path, 'r', encoding='UTF-8') as f:
             return json.load(f)
-        
     
-    def write_file(self, data: dict):
-        try:
-            with open (self.path, 'w', encoding='UTF-8') as f:
-                json.dump(data, f, indent=4, ensure_ascii=False)
-        except Exception as e:
-            print(e)
-            exit(1)
+    def write_file(self, data: dict) -> None:
+        with open (self.path, 'w', encoding='UTF-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
 
-    def create_clear_file(self):
+    def create_clear_file(self) -> None:
         self.write_file({})
-
 
 class Phone_book():
 
@@ -60,10 +50,6 @@ class Phone_book():
         self.contacts.append(contact)
         self.change_log['new'].append(contact)
 
-    def view_contacts(self) -> None:
-        for contact in self.contacts:
-            print(contact)
-
     def get_new_id(self) -> str:
         if self.contacts:
             cont_with_max_id = max(self.contacts, key=lambda contact: int(contact.id))
@@ -75,20 +61,6 @@ class Phone_book():
             if self.change_log[key]:
                 return True
         return False
-
-    def view_change(self):
-        print('Список изменений.')
-        if self.change_log['new']:
-            print('Добавлены контакты:')
-            for cont in self.change_log['new']: print(cont)
-        if self.change_log['change']:
-            print()
-            print('Изменены контакты:')
-            for cont in self.change_log['change']: print(cont)
-        if self.change_log['del']:
-            print()
-            print('Удалены контакты:')
-            for cont in self.change_log['del']: print(cont)
 
     def save_change(self, file : 'File_phone_book') -> None:
         dict_contacts = {}
@@ -103,13 +75,13 @@ class Phone_book():
                 return True
         return False
 
-    def _get_contact_by_id(self, id:str) -> 'Contact|None':
+    def get_contact_by_id(self, id:str) -> 'Contact|None':
         for cont in self.contacts:
             if cont.id == id:
                 return cont
 
     def del_contact_by_id(self, id : str) -> None:
-        cont = self._get_contact_by_id(id)
+        cont = self.get_contact_by_id(id)
         self.contacts.remove(cont)
         if cont in self.change_log['new']:
             self.change_log['new'].remove(cont)
@@ -117,7 +89,7 @@ class Phone_book():
             self.change_log['del'].append(cont)
 
     def edit_contacts(self, id: str, name: 'str|None' =None, phone:'str|None' = None, comment:'str|None' = None ) -> 'bool|None':
-        cont = self._get_contact_by_id(id)
+        cont = self.get_contact_by_id(id)
         if cont is not None:
             in_new = False
             in_change = False
@@ -142,11 +114,7 @@ class Phone_book():
         else:
             return False
 
-    def view_contact_by_id(self, id: str) -> None:
-        cont = self._get_contact_by_id(id)
-        print(cont)
-
-    def search_and_view_contact(self, search_query: str, name:bool = False, phone:bool = False, comment:bool = False) -> None:
+    def search_contact(self, search_query: str, name:bool = False, phone:bool = False, comment:bool = False) -> list:
         found_contacts = []
         if name:
             for cont in self.contacts:
@@ -161,12 +129,7 @@ class Phone_book():
                 if search_query in cont.comment and cont not in found_contacts:
                     found_contacts.append(cont)
 
-        if found_contacts:
-            print('Результат поиска:')
-            for cont in found_contacts:
-                print(cont)
-        else:
-            print('По данному запросу ничего не найдено!')
+        return found_contacts
 
     def sorted_contact_id(self) -> None:
         for enum, cont in enumerate(self.contacts, 1):
