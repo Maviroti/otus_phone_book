@@ -1,7 +1,6 @@
 import sys
 from view import clear_console, custom_print, error_print, print_about_prog, print_menu, get_input, menu_pause, yes_no
-from model import Contact, File_phone_book, Phone_book
-from config import path_to_phone_book
+from model import Contact, File_phone_book, Phone_book, StructureError
 
 from pathlib import Path
 import json
@@ -21,7 +20,7 @@ def get_data(file : 'File_phone_book') -> dict:
             sys.exit(1)
     try:
         return file.read_file()
-    except json.JSONDecodeError as e:
+    except (StructureError, json.JSONDecodeError) as e:
         error_print(f"Структура файла повреждена! Вы можете исправить проблему вручную перед повторным запуском или запустите очистку контактов.")
         yes = yes_no('Запустить очистку записной книжки?')
         if yes:
@@ -46,6 +45,10 @@ def open_edit_menu(edit_phone_id:str, phone_book : 'Phone_book') -> None:
     while selection != "0":
         print_menu(menu_points)
         selection = get_input()
+        if (not (selection.isdigit() and 0<= int(selection) <= len(menu_points))) or (selection != '0' and selection.startswith('0')):
+            error_print()
+            menu_pause()
+            continue
     
         if selection == '1':
             clear_console()
@@ -73,37 +76,40 @@ def open_search_menu(phone_book : 'Phone_book') -> None:
     ]
     selection = None
     while selection != "0":
+        found_contacts_list = []
         print_menu(menu_points)
         selection = get_input()
+        if (not (selection.isdigit() and 0<= int(selection) <= len(menu_points))) or (selection != '0' and selection.startswith('0')):
+            error_print()
+            menu_pause()
+            continue
+
         if selection == '1':
             clear_console()
             query = get_input('Введите имя для поиска: ')
             found_contacts_list = phone_book.search_contact(query, name=True)
-            menu_pause()
         elif selection == '2':
             clear_console()
             query = get_input('Введите телефон для поиска: ')
             found_contacts_list = phone_book.search_contact(query, phone=True)
-            menu_pause()
         elif selection == '3':
             clear_console()
             query = get_input('Введите комментарий для поиска: ')
             found_contacts_list = phone_book.search_contact(query, comment=True)
-            menu_pause()
         elif selection == '4':
             clear_console()
             query = get_input('Введите запрос для поиска: ')
             found_contacts_list = phone_book.search_contact(query, name=True, phone=True, comment=True)
-            menu_pause()
         if found_contacts_list:
             for cont in found_contacts_list:
-                view_contacts(cont)
+                custom_print(str(cont))
+            menu_pause()
         else:
             error_print('По данному запросу ничего не найдено!')
 
 def view_contacts(ph_book: 'Phone_book') -> None:
     for cont in ph_book.contacts:
-        custom_print(cont)
+        custom_print(str(cont))
 
 def view_change(ph_book: 'Phone_book') -> None:
     custom_print('Список изменений.')
@@ -141,9 +147,10 @@ def open_main_menu() -> None:
     while selection != "0":
         print_menu(menu_points)
         selection = get_input()
-        if not (selection.isdigit() and 0<= int(selection) <= len(menu_points)):
+        if (not (selection.isdigit() and 0<= int(selection) <= len(menu_points))) or (selection != '0' and selection.startswith('0')):
             error_print()
             menu_pause()
+            continue
 
         if selection == '1':
             view_contacts(ph_book)
